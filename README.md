@@ -5,10 +5,10 @@ Site público de espaços e fornecedores, preparado para `clubeon.rubli.com.br`.
 ## Fluxo
 
 1. O proprietário ou fornecedor cadastra gratuitamente seu negócio e até seis fotos de uma vez.
-2. No painel master, a seção **Catálogo** recebe o cadastro pendente. Revise descrição, fotos e contato; escolha **Publicados** e salve.
-3. O negócio aparece no site. Você pode editar, ocultar ou recusar sem alterar licenças, cobranças, parceiros ou reservas do sistema existente.
+2. No painel master, a seção **Notificações** mostra os novos anúncios e o contador no sino. Os cadastros já estão publicados. Revise descrição, fotos e contato; marque como revisado ou recuse com motivo para retirar do site.
+3. O negócio aparece no site imediatamente após o envio. Você pode editar, ocultar ou recusar sem alterar licenças, cobranças, parceiros ou reservas do sistema existente.
 
-Não há anúncios fictícios em produção. Antes das primeiras aprovações, as seções convidam os negócios a se cadastrar. Os filtros indicam estrutura, não disponibilidade em uma data. A contratação ocorre diretamente com o negócio.
+Não há anúncios fictícios em produção. Antes dos primeiros cadastros, as seções convidam os negócios a se cadastrar. Os filtros indicam estrutura, não disponibilidade em uma data. A contratação ocorre diretamente com o negócio.
 
 ## Deploy no Render
 
@@ -25,7 +25,7 @@ Primeiro publique a atualização do repositório `admespacoon` que adiciona a A
 
 O frontend usa a API do próprio catálogo, cujo servidor encaminha somente as rotas públicas permitidas ao master. Nenhuma senha, cookie de administração ou chave de licença é enviada ao navegador. Não configure MongoDB neste novo serviço: os cadastros usam uma coleção separada no banco do master e entram no backup existente dele.
 
-`/api/health` indica se a URL foi configurada, não verifica a conexão com o master. Para verificar a integração, abra `/api/catalog/meta` e envie um cadastro de teste; aprove no master e confira a publicação e as fotos.
+`/api/health` indica se a URL foi configurada, não verifica a conexão com o master. Para verificar a integração, abra `/api/catalog/meta` e envie um cadastro de teste; confira a publicação e as fotos imediatamente, depois revise no master e teste a recusa.
 
 ## Desenvolvimento
 
@@ -35,7 +35,7 @@ O frontend usa a API do próprio catálogo, cujo servidor encaminha somente as r
 
 ## Fotos e dados
 
-Arquivos JPG, PNG e WebP de até 5 MB são convertidos no navegador para JPEG e reduzidos para menos de 100 KB cada. Até seis fotos, armazenadas apenas no master. Nome do responsável e e-mail ficam privados. WhatsApp, cidade, bairro, descrição, estrutura, site e fotos serão públicos após aprovação e autorização expressa. A equipe pode ocultar um negócio; solicitações de exclusão são atendidas pelo contato da plataforma e a remoção definitiva exige tratamento dos dados no master, inclusive retenção de backups.
+Arquivos JPG, PNG e WebP de até 5 MB são convertidos no navegador para JPEG e reduzidos para menos de 100 KB cada. Até seis fotos, armazenadas apenas no master. Nome do responsável e e-mail ficam privados. WhatsApp, cidade, bairro, descrição, estrutura, site e fotos serão públicos imediatamente após o envio e autorização expressa. A equipe pode ocultar um negócio; solicitações de exclusão são atendidas pelo contato da plataforma e a remoção definitiva exige tratamento dos dados no master, inclusive retenção de backups.
 
 ## Identidade visual
 
@@ -44,3 +44,5 @@ Arquivos JPG, PNG e WebP de até 5 MB são convertidos no navegador para JPEG e 
 ## Restauração
 
 `restore/before-catalog-2026-10-04` preserva a inicialização do repositório, que estava vazio. No master, `restore/before-public-catalog-2026-10-04` preserva o código anterior. Reverter o código não remove os dados criados no banco.
+
+Novos anúncios são publicados com revisão posterior. O sino e a seção Notificações do master mostram anúncios ainda não revisados; o painel aberto consulta novidades a cada 60 segundos. Não há envio automático por WhatsApp. A edição pelo proprietário ficará para uma próxima etapa.
