@@ -56,3 +56,9 @@ Após ativar, o anunciante entra com WhatsApp e senha e gerencia apenas os anún
 As sessões ficam em cookie HttpOnly e Secure em produção. A senha é armazenada como hash no Master; tokens de ativação são armazenados somente como hash. A recuperação de senha invalida as sessões anteriores. Não configure segredos no frontend.
 
 Deploy: publique primeiro o Master com o fluxo de acesso e depois este catálogo. Não há novas variáveis obrigatórias; o gateway usa o MASTER_API_URL existente.
+
+### Contato dos espaços com agendamento online
+
+A opção de reservas online exige um site HTTPS e direciona os visitantes apenas ao botão de reservas. O WhatsApp continua obrigatório como contato privado para liberar o acesso do responsável; não é retornado pelas APIs públicas desses anúncios. A área do dono e o Master continuam recebendo o telefone. Fornecedores e espaços sem agendamento mantêm o WhatsApp público. Anúncios antigos de espaços que já têm site usam reservas online por padrão; o responsável ou o Master pode desativar a opção se o link for apenas institucional.
+
+Atualize o Master antes do catálogo. Não há novas variáveis de ambiente ou migração obrigatória.
