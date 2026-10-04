@@ -12,6 +12,12 @@ export function masterBase(value, production = false) {
 export function gatewayPath(method, pathname) {
   return method === 'GET' && (pathname === '/api/catalog' || pathname === '/api/catalog/meta' || /^\/api\/catalog\/entries\/[\w-]{1,64}$/.test(pathname) || /^\/api\/catalog\/photos\/[\w-]{1,64}\/[0-5]$/.test(pathname)) || method === 'POST' && pathname === '/api/catalog/submissions'
 }
+export function ownerGatewayPath(method, pathname) {
+  return method === 'POST' && ['/api/catalog/owner/access-request', '/api/catalog/owner/login', '/api/catalog/owner/activate', '/api/catalog/owner/logout'].includes(pathname)
+    || method === 'GET' && ['/api/catalog/owner/session', '/api/catalog/owner/entries'].includes(pathname)
+    || method === 'GET' && /^\/api\/catalog\/owner\/photos\/[\w-]{1,64}\/[0-5]$/.test(pathname)
+    || ['PUT', 'DELETE'].includes(method) && /^\/api\/catalog\/owner\/entries\/[\w-]{1,64}$/.test(pathname)
+}
 export function createApp({ upstream = process.env.MASTER_API_URL, fetcher = fetch } = {}) {
   const origin = upstream ? masterBase(upstream, process.env.NODE_ENV === 'production') : null
   const app = express()
@@ -19,9 +25,16 @@ export function createApp({ upstream = process.env.MASTER_API_URL, fetcher = fet
   app.use(helmet({ contentSecurityPolicy: { directives: { defaultSrc: ["'self'"], scriptSrc: ["'self'"], styleSrc: ["'self'", "'unsafe-inline'"], imgSrc: ["'self'", 'blob:', 'data:'], connectSrc: ["'self'"], objectSrc: ["'none'"], frameAncestors: ["'none'"] } } }))
   app.use(express.json({ limit: '1mb' }))
   app.post('/api/catalog/submissions', rateLimit({ windowMs: 3600000, limit: 10, standardHeaders: 'draft-7', legacyHeaders: false, message: { error: 'Muitos cadastros neste período. Tente novamente mais tarde.' } }))
+  for (const endpoint of ['login', 'activate', 'access-request']) app.post('/api/catalog/owner/' + endpoint, rateLimit({ windowMs: 15 * 60000, limit: 20, standardHeaders: 'draft-7', legacyHeaders: false, message: { error: 'Muitas tentativas. Tente novamente em 15 minutos.' } }))
+  app.use('/api/catalog/owner', rateLimit({ windowMs: 15 * 60000, limit: 150, standardHeaders: 'draft-7', legacyHeaders: false, message: { error: 'Muitas solicitações. Tente novamente em 15 minutos.' } }))
   app.use('/api/catalog', async (req, res) => {
     res.setHeader('Cache-Control', 'no-store')
-    if (!gatewayPath(req.method, req.originalUrl.split('?')[0])) return res.status(404).json({ error: 'Página não encontrada.' })
+    const pathname = req.originalUrl.split('?')[0], owner = pathname.startsWith('/api/catalog/owner/')
+    if (!(owner ? ownerGatewayPath(req.method, pathname) : gatewayPath(req.method, pathname))) return res.status(404).json({ error: 'Página não encontrada.' })
+    if (owner && req.method !== 'GET' && (req.get('x-catalog-request') !== '1' || (req.get('origin') && req.get('origin') !== req.protocol + '://' + req.get('host')))) return res.status(403).json({ error: 'Requisição inválida. Abra o catálogo e tente novamente.' })
+    const cookieName = process.env.NODE_ENV === 'production' ? '__Host-clubeon_owner' : 'clubeon_owner'
+    const cookieOptions = { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'strict', path: '/', maxAge: 12 * 3600000 }
+    if (owner && pathname.endsWith('/logout')) { res.clearCookie(cookieName, cookieOptions); return res.json({ ok: true }) }
     if (!origin) return res.status(503).json({ error: 'O catálogo está em preparação. Tente novamente em breve.' })
     try {
       if (Object.keys(req.query).some(key => /[\[\]]/.test(key))) return res.status(400).json({ error: 'Filtro inválido.' })
@@ -33,12 +46,18 @@ export function createApp({ upstream = process.env.MASTER_API_URL, fetcher = fet
           query.set(key, value)
         }
       }
-      const pathname = req.originalUrl.split('?')[0]
-      const response = await fetcher(origin + pathname + (query.size ? '?' + query : ''), { method: req.method, signal: AbortSignal.timeout(12000), redirect: 'error', headers: { Accept: pathname.includes('/photos/') ? 'image/jpeg' : 'application/json', ...(req.method === 'POST' ? { 'Content-Type': 'application/json' } : {}) }, ...(req.method === 'POST' ? { body: JSON.stringify(req.body) } : {}) })
+      const session = (req.headers.cookie || '').split(';').map(v => v.trim()).find(v => v.startsWith(cookieName + '='))?.slice(cookieName.length + 1) || ''
+      const hasBody = ['POST', 'PUT', 'DELETE'].includes(req.method)
+      const response = await fetcher(origin + pathname + (query.size ? '?' + query : ''), { method: req.method, signal: AbortSignal.timeout(12000), redirect: 'error', headers: { Accept: pathname.includes('/photos/') ? 'image/jpeg' : 'application/json', ...(hasBody ? { 'Content-Type': 'application/json' } : {}), ...(owner && session && session.length < 4096 ? { 'x-catalog-owner-session': session } : {}) }, ...(hasBody ? { body: JSON.stringify(req.body) } : {}) })
       const contentType = response.headers.get('content-type') || ''
       if (pathname.includes('/photos/') && response.ok && contentType.startsWith('image/jpeg')) return res.type('jpeg').send(Buffer.from(await response.arrayBuffer()))
       if (!contentType.includes('application/json')) throw new Error('Resposta inválida do master')
       const data = await response.json()
+      if (owner && response.ok && ['/api/catalog/owner/login', '/api/catalog/owner/activate'].includes(pathname)) {
+        if (typeof data.sessionToken !== 'string' || data.sessionToken.length > 4096) throw new Error('Sessão inválida')
+        res.cookie(cookieName, data.sessionToken, cookieOptions)
+      }
+      if (owner) { delete data.sessionToken; if (response.status === 401) res.clearCookie(cookieName, cookieOptions) }
       res.status(response.status).json(data)
     } catch { res.status(502).json({ error: 'Não foi possível carregar o catálogo. Tente novamente em instantes.' }) }
   })
