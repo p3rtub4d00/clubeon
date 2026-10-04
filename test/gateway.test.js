@@ -32,3 +32,22 @@ test('unconfigured gateway reports availability without showing fictitious listi
   const server = createApp({ upstream: '' }).listen(0, '127.0.0.1'); await once(server, 'listening')
   try { const res = await fetch('http://127.0.0.1:' + server.address().port + '/api/catalog'); assert.equal(res.status, 503); assert.match((await res.json()).error, /preparação/) } finally { await new Promise(resolve => server.close(resolve)) }
 })
+
+test('owner sessions stay in HttpOnly cookie; gateway blocks cross-origin writes and never forwards master credentials', async () => {
+  let call
+  const app = createApp({ upstream: 'https://master.example.com', fetcher: async (url, options) => { call = { url, options }; return new Response(JSON.stringify(url.endsWith('/login') ? { ok: true, sessionToken: 'owner-test-session' } : { ok: true }), { headers: { 'Content-Type': 'application/json' } }) } })
+  const server = app.listen(0, '127.0.0.1'); await once(server, 'listening'); const base = 'http://127.0.0.1:' + server.address().port
+  try {
+    const path = '/api/catalog/owner/login', payload = { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-catalog-request': '1' }, body: JSON.stringify({ phone: '69999990000', password: 'test-password' }) }
+    assert.equal((await fetch(base + path, { ...payload, headers: { 'Content-Type': 'application/json' } })).status, 403)
+    assert.equal((await fetch(base + path, { ...payload, headers: { ...payload.headers, Origin: 'https://attacker.example.com' } })).status, 403)
+    const login = await fetch(base + path, payload); assert.equal(login.status, 200); assert.deepEqual(await login.json(), { ok: true })
+    const cookie = login.headers.get('set-cookie'); assert.match(cookie, /HttpOnly/); assert.match(cookie, /SameSite=Strict/); assert.match(cookie, /Path=\//)
+    const session = cookie.split(';')[0]
+    await fetch(base + '/api/catalog/owner/entries/test-id', { method: 'PUT', headers: { 'Content-Type': 'application/json', 'x-catalog-request': '1', Cookie: session + '; espacoon_master=master-secret', Authorization: 'Bearer attacker', 'x-catalog-owner-session': 'forged' }, body: JSON.stringify({ name: 'Update' }) })
+    assert.equal(call.options.method, 'PUT'); assert.equal(call.options.headers['x-catalog-owner-session'], 'owner-test-session'); assert.equal(call.options.headers.Cookie, undefined); assert.equal(call.options.headers.Authorization, undefined); assert.equal(JSON.parse(call.options.body).name, 'Update')
+    await fetch(base + '/api/catalog', { headers: { Cookie: session } }); assert.equal(call.options.headers['x-catalog-owner-session'], undefined)
+    const logout = await fetch(base + '/api/catalog/owner/logout', { ...payload, headers: { ...payload.headers, Cookie: session }, body: '{}' }); assert.match(logout.headers.get('set-cookie'), /Expires=Thu, 01 Jan 1970/)
+    assert.equal((await fetch(base + '/api/catalog/owner/arbitrary')).status, 404)
+  } finally { await new Promise(resolve => server.close(resolve)) }
+})

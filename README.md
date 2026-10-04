@@ -46,3 +46,13 @@ Arquivos JPG, PNG e WebP de até 5 MB são convertidos no navegador para JPEG e 
 `restore/before-catalog-2026-10-04` preserva a inicialização do repositório, que estava vazio. No master, `restore/before-public-catalog-2026-10-04` preserva o código anterior. Reverter o código não remove os dados criados no banco.
 
 Novos anúncios são publicados com revisão posterior. O sino e a seção Notificações do master mostram anúncios ainda não revisados; o painel aberto consulta novidades a cada 60 segundos. Não há envio automático por WhatsApp. A edição pelo proprietário ficará para uma próxima etapa.
+
+## Área do anunciante
+
+O botão **Meus anúncios** permite solicitar acesso usando o WhatsApp informado no anúncio. O pedido chega ao Master em **Notificações → Pedidos de acesso aos anúncios**. A equipe confere o responsável, seleciona os anúncios e gera o link. O botão WhatsApp abre a mensagem pronta; o envio é manual. O link vale por 24 horas, é de uso único e permite definir ou recuperar a senha. Não há Telegram nem API de WhatsApp nessa etapa.
+
+Após ativar, o anunciante entra com WhatsApp e senha e gerencia apenas os anúncios vinculados pela equipe. Pode editar dados, adicionar/remover fotos e excluir os anúncios. Para alterar o número de WhatsApp deve contatar a equipe. Anúncios publicados permanecem visíveis após a edição e voltam à fila de revisão; ocultos ou recusados ficam fora do catálogo até a equipe republicar.
+
+As sessões ficam em cookie HttpOnly e Secure em produção. A senha é armazenada como hash no Master; tokens de ativação são armazenados somente como hash. A recuperação de senha invalida as sessões anteriores. Não configure segredos no frontend.
+
+Deploy: publique primeiro o Master com o fluxo de acesso e depois este catálogo. Não há novas variáveis obrigatórias; o gateway usa o MASTER_API_URL existente.
