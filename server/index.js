@@ -64,7 +64,7 @@ export function createApp({ upstream = process.env.MASTER_API_URL, fetcher = fet
   app.get('/api/health', (_req, res) => res.json({ ok: true, catalogConfigured: !!origin }))
   app.use('/api', (_req, res) => res.status(404).json({ error: 'Página não encontrada.' }))
   const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
-  app.use(express.static(path.join(root, 'dist')))
+  app.use(express.static(path.join(root, 'dist'), { setHeaders: (res, file) => { if (['sw.js', 'manifest.webmanifest'].includes(path.basename(file))) res.setHeader('Cache-Control', 'no-cache') } }))
   app.get('/{*path}', (_req, res) => res.sendFile(path.join(root, 'dist/index.html')))
   app.use((error, _req, res, _next) => res.status(error.status === 413 ? 413 : 400).json({ error: error.status === 413 ? 'Fotos acima do limite. Selecione novamente.' : 'Requisição inválida.' }))
   return app
