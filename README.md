@@ -80,3 +80,9 @@ O botão “Instalar aplicativo” fica próximo ao rodapé. Usa a solicitação
 O service worker é registrado apenas no build de produção. Guarda somente recursos estáticos públicos e uma página de ajuda sem conexão. Nunca guarda respostas de API, fotos privadas, sessão, formulários ou HTML com link de ativação. Consultar anúncios e gerenciar publicações exige internet; o botão de tentar novamente retorna ao catálogo quando a conexão volta. O cache de recursos adicionais é limitado a 40 entradas. O manifesto e o service worker são servidos com revalidação para facilitar atualizações.
 
 Atualize apenas o serviço do catálogo. Não há novas variáveis de ambiente; instalação em produção exige o site acessível por HTTPS. Após o deploy, conferir a instalação no celular e abertura pelo ícone. Instalação nativa foi simulada no navegador de QA; a instalação física no aparelho depende da confirmação do usuário.
+
+### Estruturas adicionais do espaço
+
+TV, bebedouro e ar-condicionado integram as opções fixas e os filtros do catálogo. O cadastro e a edição pelo proprietário ou Master também aceitam até 20 estruturas personalizadas, com até 60 caracteres por item. Elas aparecem no anúncio e podem ser removidas na edição; não criam filtros globais. Nomes equivalentes às opções fixas selecionam a opção existente, evitando duplicação. Anúncios antigos continuam funcionando sem preenchimento adicional.
+
+Publicar o backend/painel Master antes do catálogo. Não há novas variáveis de ambiente nem migração obrigatória.
