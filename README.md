@@ -62,3 +62,7 @@ Deploy: publique primeiro o Master com o fluxo de acesso e depois este catálogo
 A opção de reservas online exige um site HTTPS e direciona os visitantes apenas ao botão de reservas. O WhatsApp continua obrigatório como contato privado para liberar o acesso do responsável; não é retornado pelas APIs públicas desses anúncios. A área do dono e o Master continuam recebendo o telefone. Fornecedores e espaços sem agendamento mantêm o WhatsApp público. Anúncios antigos de espaços que já têm site usam reservas online por padrão; o responsável ou o Master pode desativar a opção se o link for apenas institucional.
 
 Atualize o Master antes do catálogo. Não há novas variáveis de ambiente ou migração obrigatória.
+
+### Instagram no anúncio
+
+O cadastro e a edição aceitam um Instagram opcional apenas no formato `@perfil`, sem link. O botão discreto “Ver Instagram” nos detalhes abre o perfil informado em outra aba, para espaços e fornecedores, preservando o destaque do botão de reservas. Anúncios sem Instagram continuam funcionando normalmente. Atualize primeiro o Master correspondente. Sem novas variáveis de ambiente.
