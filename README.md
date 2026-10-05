@@ -66,3 +66,7 @@ Atualize o Master antes do catálogo. Não há novas variáveis de ambiente ou m
 ### Instagram no anúncio
 
 O cadastro e a edição aceitam um Instagram opcional apenas no formato `@perfil`, sem link. O botão discreto “Ver Instagram” nos detalhes abre o perfil informado em outra aba, para espaços e fornecedores, preservando o destaque do botão de reservas. Anúncios sem Instagram continuam funcionando normalmente. Atualize primeiro o Master correspondente. Sem novas variáveis de ambiente.
+
+### Fotos ampliadas dos anúncios
+
+Clique na foto principal dos detalhes para abrir o visualizador que ocupa a tela, preservando a imagem inteira com `object-fit: contain`. Navegue pelas setas, teclas esquerda/direita ou deslizando no celular. Escape ou o botão de fechar retorna ao anúncio e mantém a foto selecionada. Vale para espaços e fornecedores, sem alterar o upload ou o armazenamento das fotos.
