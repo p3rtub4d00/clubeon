@@ -70,3 +70,13 @@ O cadastro e a edição aceitam um Instagram opcional apenas no formato `@perfil
 ### Fotos ampliadas dos anúncios
 
 Clique na foto principal dos detalhes para abrir o visualizador que ocupa a tela, preservando a imagem inteira com `object-fit: contain`. Navegue pelas setas, teclas esquerda/direita ou deslizando no celular. Escape ou o botão de fechar retorna ao anúncio e mantém a foto selecionada. Vale para espaços e fornecedores, sem alterar o upload ou o armazenamento das fotos.
+
+### Aplicativo PWA do catálogo
+
+O catálogo pode ser instalado como ClubeOn na tela inicial. O manifesto usa identidade e endereço inicial `/`, janela standalone e ícones PNG de 192/512 pixels (com versão compatível com máscaras do Android), além do ícone de 180 pixels para iOS. O SVG original do novo ícone fica em `public/icons/clubeon.svg`, com a marca já usada no site.
+
+O botão “Instalar aplicativo” fica próximo ao rodapé. Usa a solicitação nativa quando disponível e apresenta instruções para Android, iPhone e computador quando o navegador não oferece essa solicitação. Some no modo instalado.
+
+O service worker é registrado apenas no build de produção. Guarda somente recursos estáticos públicos e uma página de ajuda sem conexão. Nunca guarda respostas de API, fotos privadas, sessão, formulários ou HTML com link de ativação. Consultar anúncios e gerenciar publicações exige internet; o botão de tentar novamente retorna ao catálogo quando a conexão volta. O cache de recursos adicionais é limitado a 40 entradas. O manifesto e o service worker são servidos com revalidação para facilitar atualizações.
+
+Atualize apenas o serviço do catálogo. Não há novas variáveis de ambiente; instalação em produção exige o site acessível por HTTPS. Após o deploy, conferir a instalação no celular e abertura pelo ícone. Instalação nativa foi simulada no navegador de QA; a instalação física no aparelho depende da confirmação do usuário.

@@ -1,0 +1,19 @@
+{
+  "id": "/",
+  "name": "ClubeOn — Espaços e serviços para festas",
+  "short_name": "ClubeOn",
+  "description": "Encontre clubes, chácaras e fornecedores para festas. Divulgue seu negócio gratuitamente.",
+  "lang": "pt-BR",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "theme_color": "#1262d9",
+  "background_color": "#ffffff",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Meus anúncios", "url": "/#meus-anuncios" }
+  ]
+}
